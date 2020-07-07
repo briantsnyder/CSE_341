@@ -1,0 +1,3 @@
+INSERT into ATM(branchName) values ('Hamilton');
+INSERT into ATM(branchName) values ('New York');
+INSERT into ATM(branchName) values ('Lehigh');

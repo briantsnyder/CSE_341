@@ -1,0 +1,249 @@
+drop table owns;
+drop table makes;
+drop table charges;
+drop table buys;
+drop table purchases;
+drop table payCredit;
+drop table cardPayments;
+drop table accountLink;
+drop table customer;
+drop table item;
+drop table lend;
+drop table payLoan;
+drop table loanPayments;
+drop table borrows;
+drop table unsecuredLoan;
+drop table securedLoan;
+drop table loan;
+drop table D;
+drop table W;
+drop table tellarDeposit;
+drop table bankWithdraw;
+drop table deposits;
+drop table withdraws;
+drop table link;
+drop table accountBranch;
+drop table hires;
+drop table ATM;
+drop table tellar;
+drop table branch;
+drop table checkingAccount;
+drop table savingsAccount;
+drop table account;
+drop table transaction;
+drop table debitCard;
+drop table creditCard;
+drop table card;
+
+create table customer (
+SSN varchar(9) not null primary key,
+FirstName varchar(20) not null,
+LastName varchar(20) not null,
+DOB varchar(10) not null
+);
+
+create table card (
+cardNumber varchar(16) not null primary key,
+expirationDate varchar(7) not null,
+cardBalance int not null
+);
+
+create table debitCard (
+cardNumber varchar(16) not null primary key,
+foreign key(cardNumber) references card(cardNumber)
+);
+
+create table creditCard (
+cardNumber varchar(16) not null primary key,
+creditRate int check(creditRate > 0),
+balanceDue int not null, /* might need to make double */
+creditLimit int check(creditLimit > 0),
+foreign key(cardNumber) references card(cardNumber)
+);
+
+create table owns (
+ID varchar(9) not null,
+cardID varchar(16) not null,
+foreign key(ID) references customer(SSN),
+foreign key(cardID) references card(cardNumber)
+);
+
+create table transaction (
+T_ID varchar(7) not null primary key,
+transactionDate varchar(10) not null,
+amount int check (amount >= 0)
+);
+
+create table makes (
+ID varchar(9) not null,
+T_ID varchar(7) not null,
+foreign key(ID) references customer(SSN),
+foreign key(T_ID) references transaction(T_ID)
+);
+
+create table cardPayments (
+T_ID varchar(7) not null primary key,
+foreign key(T_ID) references transaction(T_ID)
+);
+
+create table payCredit (
+T_ID varchar(7) not null,
+cardID varchar(16) not null,
+foreign key(T_ID) references cardPayments(T_ID),
+foreign key(cardID) references creditCard(cardNumber)
+);
+
+create table purchases (
+T_ID varchar(7) not null primary key,
+foreign key(T_ID) references transaction(T_ID)
+);
+
+create table charges (
+cardID varchar(16) not null,
+T_ID varchar(16) not null,
+foreign key(cardID) references card(cardNumber),
+foreign key(T_ID) references purchases(T_ID)
+);
+
+create table item (
+itemID varchar(8) primary key not null,
+price int check(price > 0),
+store varchar(20)
+);
+
+create table buys (
+itemID varchar(8) not null,
+T_ID varchar(16) not null,
+foreign key(itemID) references item(itemID),
+foreign key(T_ID) references purchases(T_ID)
+);
+
+create table loan (
+loanID varchar(8) primary key not null,
+loanAmount int check (loanAmount >= 0),
+monthlyPayment int check (monthlyPayment >= 0),
+loanRate int check (loanRate > 0)
+);
+
+create table unsecuredLoan (
+loanID varchar(8),
+foreign key(loanID) references loan(loanID)
+);
+
+create table securedLoan (
+loanID varchar(8),
+collateral varchar(20) not null,
+foreign key(loanID) references loan(loanID)
+);
+
+create table borrows (
+T_ID varchar(16) not null primary key,
+foreign key(T_ID) references transaction(T_ID)
+);
+
+create table lend (
+T_ID varchar(16) not null primary key,
+loanID varchar(8) not null,
+foreign key(T_ID) references borrows(T_ID),
+foreign key(loanID) references loan(loanID)
+);
+
+create table loanPayments (
+T_ID varchar(7) not null primary key,
+foreign key(T_ID) references transaction(T_ID)
+);
+
+create table payLoan (
+T_ID varchar(7) not null,
+loanID varchar(8) not null,
+foreign key(T_ID) references loanPayments(T_ID),
+foreign key(loanID) references loan(loanID)
+);
+
+create table account (
+accountID varchar(8) primary key not null,
+accountRate int check(accountRate > 0),
+accountBalance int not null
+);
+
+create table checkingAccount (
+accountID varchar(8) primary key,
+minBalance int check (minBalance > 0),
+foreign key(accountID) references account(accountID)
+);
+
+create table savingsAccount (
+accountID varchar(8),
+foreign key(accountID) references account(accountID)
+);
+
+create table deposits (
+T_ID varchar(7) not null primary key,
+foreign key(T_ID) references transaction(T_ID)
+);
+
+create table withdraws (
+T_ID varchar(7) not null primary key,
+foreign key(T_ID) references transaction(T_ID)
+);
+
+create table D (
+T_ID varchar(7) not null,
+accountID varchar(8) not null,
+tellarID varchar(10) not null,
+foreign key(T_ID) references deposits(T_ID),
+foreign key(accountID) references account(accountID),
+foregin key(tellarID) references tellar(employeeID)
+);
+
+create table W (
+T_ID varchar(7) not null,
+accountID varchar(8) not null,
+branch varchar(20) not null,
+foreign key(T_ID) references withdraws(T_ID),
+foreign key(accountID) references account(accountID),
+foreign key(branch) references branch(name)
+);
+
+create table branch (
+name varchar(20) primary key,
+location varchar(20)
+);
+
+create table ATM (
+branchName varchar(20) not null,
+foreign key(branchName) references branch(name)
+);
+
+create table tellar (
+employeeID varchar(10) primary key,
+fullName varchar(20)
+);
+
+create table hires (
+employeeID varchar(10) not null,
+branchName varchar(20) not null,
+foreign key(branchName) references branch(name),
+foreign key(employeeID) references tellar(employeeID)
+);
+
+create table accountBranch (
+branchName varchar(20) not null,
+accountID varchar(8) not null,
+foreign key(branchName) references branch(name),
+foreign key(accountId) references account(accountID)
+);
+
+create table link (
+cardID varchar(16) not null,
+accountID varchar(8) not null,
+foreign key(cardID) references debitCard(cardNumber),
+foreign key(AccountID) references checkingAccount(accountID)
+);
+
+create table accountLink (
+accountID varchar(8) not null,
+ID varchar(9) not null,
+foreign key(accountID) references account(accountID),
+foreign key(ID) references customer(SSN)
+);
